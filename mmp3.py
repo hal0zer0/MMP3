@@ -45,7 +45,7 @@ class MMP3(gtk.Window):
     column = gtk.TreeViewColumn(name, rendererText, text=iter)
     column.set_sort_column_id(iter)
     self.treeView.append_column(column)
-    iter += 1
+    #iter += 1
 
 if __name__ == "__main__":
   MMP3()
