@@ -24,11 +24,28 @@ class MMP3(gtk.Window):
 
     #Insert custom Playlist class into treeview, add to scrolling window
     self.playlist = playlist.Playlist()
-    treeView = gtk.TreeView(self.playlist)
-    sw.add(treeView)
+    self.treeView = gtk.TreeView(self.playlist)
+
+    #Create initial columns in treeview
+    initial_columns = ("#", "Title", "Artist", "Length", "Path")
+    i = 0
+    for cname in initial_columns:
+      self.add_column(cname, i)
+      i += 1
+    sw.add(self.treeView)
 
     self.add(self.table)
     self.show_all()
+
+  def add_column(self, name, iter):
+    rendererText = gtk.CellRendererText()
+    if (name == "Title") or (name == "Artist"):
+      rendererText.set_property('editable', True)
+    #rendererText.connect('edited', self.edited_cb, (self.store, iter))
+    column = gtk.TreeViewColumn(name, rendererText, text=iter)
+    column.set_sort_column_id(iter)
+    self.treeView.append_column(column)
+    iter += 1
 
 if __name__ == "__main__":
   MMP3()
