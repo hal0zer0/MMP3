@@ -82,7 +82,6 @@ class MMP3(gtk.Window):
     self.table.attach(self.addFileButton, 14,16,15,16)
 
   def add_button_cb(self, widget):
-    print "Add button clcked"
     self.playlist.add_track()
 
   def del_button_cb(self, widget):

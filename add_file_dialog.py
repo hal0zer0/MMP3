@@ -20,7 +20,8 @@ def show():
   #Set up file filters...
   filter = gtk.FileFilter()
   filter.set_name("Supported Types")
-  filter.add_pattern("*.mp3")
+  for ok_type in ("*.mp3", "*.MP3", "*.flac", "*.FLAC"):
+    filter.add_pattern(ok_type)
   dialog.add_filter(filter)
 
   filter = gtk.FileFilter()
