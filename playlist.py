@@ -19,13 +19,15 @@ class Playlist(gtk.ListStore):
 
   def add_column(self, name, id, treeView):
     rendererText = gtk.CellRendererText()
+    #Allow Artist and Title fields to be editable by user
     if (name == "Title") or (name == "Artist"):
       rendererText.set_property('editable', True)
-    #rendererText.connect('edited', self.edited_cb, (self.store, iter))
+    rendererText.connect('edited', self.cell_edited_cb, id)
     column = gtk.TreeViewColumn(name, rendererText, text=id)
     column.set_resizable(True)
     column.set_reorderable(True)
     column.set_sort_column_id(id)
+
     treeView.append_column(column)
 
 
@@ -41,18 +43,18 @@ class Playlist(gtk.ListStore):
       if ext == "mp3":
         trackInfo = self._get_mp3_trackInfo(filenameToAdd)
         self.append(trackInfo)
-        self._update_track_numbers()
+        self.update_track_numbers()
         return True
       #FLAC handler
       elif ext == "flac":
         trackInfo = self._get_flac_trackInfo(filenameToAdd)
         self.append(trackInfo)
-        self._update_track_numbers()
+        self.update_track_numbers()
         return True
       elif ext == "ogg":
         trackInfo = self._get_ogg_trackInfo(filenameToAdd)
         self.append(trackInfo)
-        self._update_track_numbers()
+        self.update_track_numbers()
         return True
 
       else:
@@ -117,7 +119,7 @@ class Playlist(gtk.ListStore):
     return [len(self) + 1, title, artist, length, filename]
 
 
-  def _update_track_numbers(self):
+  def update_track_numbers(self):
     i = 1
     for line in self:
       line[0] = str(i).zfill(2)
@@ -126,6 +128,11 @@ class Playlist(gtk.ListStore):
 
   def remove_item(self, model, it):
     model.remove(it)
-    self._update_track_numbers()
+    self.update_track_numbers()
+
+
+  def cell_edited_cb(self, cell, path, new_text, column):
+    self[path][column] = new_text
+    return
 
 author__= "Josh Price"

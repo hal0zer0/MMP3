@@ -32,6 +32,8 @@ class MMP3(gtk.Window):
     self.playlist = playlist.Playlist()
     self.treeView = gtk.TreeView(self.playlist)
     self.treeView.connect("cursor-changed", self.select_cb, self.treeView.get_selection())
+    self.treeView.connect("drag-end", self.drop_cb)
+    self.treeView.set_reorderable(True)
 
     #Create initial columns in treeview
     initial_columns = ("#", "Title", "Artist", "Length", "Path")
@@ -88,6 +90,8 @@ class MMP3(gtk.Window):
     if self.selection: #result could be None
       self.model, self.it = self.selection
 
+  def drop_cb(self, widget, data):
+    self.playlist.update_track_numbers()
   
 if __name__ == "__main__":
   MMP3()
