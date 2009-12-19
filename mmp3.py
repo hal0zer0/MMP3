@@ -15,7 +15,7 @@ class MMP3(gtk.Window):
 
     #Set initial window
     self.set_size_request(800, 600)
-    self.set_position(gtk.WIN_POS_CENTER)
+    #self.set_position(gtk.WIN_POS_CENTER)
     self.connect("destroy", gtk.main_quit)
     self.set_title("MMP3")
 
@@ -37,7 +37,7 @@ class MMP3(gtk.Window):
     initial_columns = ("#", "Title", "Artist", "Length", "Path")
     i = 0
     for cname in initial_columns:
-      self.add_column(cname, i)
+      self.playlist.add_column(cname, i, self.treeView)
       i += 1
     sw.add(self.treeView)
 
@@ -46,16 +46,8 @@ class MMP3(gtk.Window):
     self.add(self.table)
     self.show_all()
 
-  def add_column(self, name, iter):
-    rendererText = gtk.CellRendererText()
-    if (name == "Title") or (name == "Artist"):
-      rendererText.set_property('editable', True)
-    #rendererText.connect('edited', self.edited_cb, (self.store, iter))
-    column = gtk.TreeViewColumn(name, rendererText, text=iter)
-    column.set_sort_column_id(iter)
-    self.treeView.append_column(column)
+  
     #iter += 1
-
   def add_buttons(self):
     self.addFileButton = gtk.Button("Add Item")
     self.addFileButton.connect("clicked", self.add_button_cb)
@@ -81,14 +73,15 @@ class MMP3(gtk.Window):
     self.addFileButton.connect("clicked", self.add_button_cb, "PUB")
     self.table.attach(self.addFileButton, 14,16,15,16)
 
+
+  # Callback methods for buttons
   def add_button_cb(self, widget):
     self.playlist.add_track()
 
+
   def del_button_cb(self, widget):
     self.playlist.remove_item(self.model, self.it)
-    #self.model.remove(self.it)
-    #self.model = libs.playlist.update_tracknumbers(self.model)
-    #playlist.update_track_numbers()
+
 
   def select_cb(self, widget, data=None):
     self.selection = data.get_selected()

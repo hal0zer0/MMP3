@@ -4,6 +4,10 @@ import datetime
 
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
+
+#from ogg import vorbis
+from mutagen.oggvorbis import OggVorbis
+
 from mutagen.flac import FLAC
 
 
@@ -13,23 +17,48 @@ class Playlist(gtk.ListStore):
     super(Playlist, self).__init__(str, str, str, str, str)
 
 
+  def add_column(self, name, id, treeView):
+    rendererText = gtk.CellRendererText()
+    if (name == "Title") or (name == "Artist"):
+      rendererText.set_property('editable', True)
+    #rendererText.connect('edited', self.edited_cb, (self.store, iter))
+    column = gtk.TreeViewColumn(name, rendererText, text=id)
+    column.set_resizable(True)
+    column.set_reorderable(True)
+    column.set_sort_column_id(id)
+    treeView.append_column(column)
+
+
   def add_track(self):
     print "in playlist.add_track"
     filenameToAdd = add_file_dialog.show()
-    ext = filenameToAdd.split(".").pop().lower()
-    print "Extension is", ext
 
-    #Before processing, check to see if file was actually selected
+    #Verify file was selected, get extension and track info
     if filenameToAdd != None:
+      ext = filenameToAdd.split(".").pop().lower()
+      print "Extension is", ext
       #MP3 handler
       if ext == "mp3":
         trackInfo = self._get_mp3_trackInfo(filenameToAdd)
         self.append(trackInfo)
+        self._update_track_numbers()
+        return True
       #FLAC handler
-      if ext == "flac":
+      elif ext == "flac":
         trackInfo = self._get_flac_trackInfo(filenameToAdd)
         self.append(trackInfo)
-    self._update_track_numbers()
+        self._update_track_numbers()
+        return True
+      elif ext == "ogg":
+        trackInfo = self._get_ogg_trackInfo(filenameToAdd)
+        self.append(trackInfo)
+        self._update_track_numbers()
+        return True
+
+      else:
+        return False
+
+    
 
 
   def _get_flac_trackInfo(self, filename):
@@ -46,6 +75,23 @@ class Playlist(gtk.ListStore):
       title = "Unknown"
       length = "0:00"
       
+    return [len(self) + 1, title, artist, length, filename]
+
+
+  def _get_ogg_trackInfo(self, filename):
+    try:
+      oggInfo = OggVorbis(filename)
+      print oggInfo
+      print oggInfo.info.length
+      artist = oggInfo["artist"][0].strip()
+      title = oggInfo["title"][0].strip()
+      length = str(datetime.timedelta(seconds=int(oggInfo.info.length)))
+    except Exception as err:
+      print err
+      artist = "Unknown"
+      title = "Unknown"
+      length = "0:00"
+
     return [len(self) + 1, title, artist, length, filename]
 
 
@@ -82,4 +128,4 @@ class Playlist(gtk.ListStore):
     model.remove(it)
     self._update_track_numbers()
 
-author__="Josh Price"
+author__= "Josh Price"
