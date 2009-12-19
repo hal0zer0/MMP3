@@ -82,7 +82,7 @@ class MMP3(gtk.Window):
 
   def add_button_cb(self, widget):
     print "Add button clcked"
-    self.playlist.add_track(add_file_dialog.show())
+    self.playlist.add_track()
 
   
 if __name__ == "__main__":
