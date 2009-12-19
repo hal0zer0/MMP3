@@ -31,6 +31,7 @@ class MMP3(gtk.Window):
     #Insert custom Playlist class into treeview, add to scrolling window
     self.playlist = playlist.Playlist()
     self.treeView = gtk.TreeView(self.playlist)
+    self.treeView.connect("cursor-changed", self.select_cb, self.treeView.get_selection())
 
     #Create initial columns in treeview
     initial_columns = ("#", "Title", "Artist", "Length", "Path")
@@ -62,7 +63,7 @@ class MMP3(gtk.Window):
 
     #Del Item button
     self.addFileButton = gtk.Button("Del Item")
-    self.addFileButton.connect("clicked", self.add_button_cb, "DEL")
+    self.addFileButton.connect("clicked", self.del_button_cb)
     self.table.attach(self.addFileButton, 2,4,15,16)
 
     #Add Save button
@@ -83,6 +84,17 @@ class MMP3(gtk.Window):
   def add_button_cb(self, widget):
     print "Add button clcked"
     self.playlist.add_track()
+
+  def del_button_cb(self, widget):
+    self.playlist.remove_item(self.model, self.it)
+    #self.model.remove(self.it)
+    #self.model = libs.playlist.update_tracknumbers(self.model)
+    #playlist.update_track_numbers()
+
+  def select_cb(self, widget, data=None):
+    self.selection = data.get_selected()
+    if self.selection: #result could be None
+      self.model, self.it = self.selection
 
   
 if __name__ == "__main__":

@@ -17,12 +17,18 @@ class Playlist(gtk.ListStore):
     filenameToAdd = add_file_dialog.show()
     ext = filenameToAdd[-3:].lower()
     print "Extension is", ext
+
+    #Before processing, check to see if file was actually selected
     if filenameToAdd != None:
+      #MP3 handler
       if ext == "mp3":
         trackInfo = self._get_mp3_trackInfo(filenameToAdd)
         self.append(trackInfo)
-    self.update_track_numbers()
+    self._update_track_numbers()
 
+  def remove_item(self, model, it):
+    model.remove(it)
+    self._update_track_numbers()
 
   def _get_mp3_trackInfo(self, filename):
     #Get artist and title from ID3
@@ -46,7 +52,7 @@ class Playlist(gtk.ListStore):
     return [len(self) + 1, title, artist, length, filename]
 
 
-  def update_track_numbers(self):
+  def _update_track_numbers(self):
     i = 1
     for line in self:
       line[0] = str(i).zfill(2)
