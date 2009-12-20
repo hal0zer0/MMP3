@@ -7,10 +7,12 @@ from mutagen.flac import FLAC
 ## DEBUG imports
 import os
 
+
 class Playlist(gtk.ListStore):
-  def __init__(self):
-    super(Playlist, self).__init__(str, str, str, str, str)
-    self.total_length_seconds = 0
+  def __init__(self, summary):
+    super(Playlist, self).__init__(str, str, str, str, str, float)
+    #self.total_length_seconds = 0
+    self.summary = summary
     self._DEBUG_add_fake_list()
 
 
@@ -29,22 +31,14 @@ class Playlist(gtk.ListStore):
 
 
   def add_track(self, filenameToAdd):
-    print "in playlist.add_track"
-    
-
     #Verify file was selected, get extension and track info
     if filenameToAdd != None:
       ext = filenameToAdd.split(".").pop().lower()
-      print "Extension is", ext
-      #MP3 handler
       trackInfo = self._get_trackInfo(filenameToAdd, ext)
       self.append(trackInfo)
-      self.update_track_numbers()
+      self.update_view()
 
       
-  
-
-
   def _get_trackInfo(self, filename, ext):
 
     try:
@@ -55,7 +49,6 @@ class Playlist(gtk.ListStore):
         track = EasyID3(filename)
         fileInfo = MP3(filename)
         length_seconds = fileInfo.info.length
-
       elif ext == "ogg":
         track = OggVorbis(filename)
         length_seconds = track.info.length
@@ -64,41 +57,52 @@ class Playlist(gtk.ListStore):
         return False
     except Exception as err:
       print err
-      length_seconds = 0
-      return [len(self) + 1, "Unknown", "Unknown", "0:00", filename]
+      finalInfo = [len(self) + 1, "Unknown", "Unknown", "0:00", filename, 0]
 
-    print track
-    print length_seconds
+      return finalInfo
+
     artist = track["artist"][0].strip()
     title = track["title"][0].strip()
-    #length_seconds = flacInfo.info.length
+    
     length_minutes = str(datetime.timedelta(seconds=int(length_seconds)))
-    self.total_length_seconds += length_seconds
+    
+    finalInfo =  [len(self) +1,   #add 1 to number of items in playlist
+                 title,
+                 artist,
+                 length_minutes,
+                 filename,
+                 length_seconds]
 
-    return [len(self) + 1, title, artist, length_minutes, filename]
+    return finalInfo
 
-  def update_track_numbers(self):
+  def update_view(self):
+    #First assign track numbers to rows zero-padded
+    #"self" is a ListStore so two-dimensional list
     i = 1
-    for line in self:
-      line[0] = str(i).zfill(2)
+    total = 0
+    for track in self:
+      track[0] = str(i).zfill(2)
+      total += track[5]
       i += 1
+    minutes = str(datetime.timedelta(seconds=int(total)))
+    numTracks = len(self)
+    summaryText = "Tracks: %s    Total Running Time:  %s" % (numTracks, minutes)
+    self.summary.set_text(summaryText)
 
 
   def remove_item(self, model, it):
-    model.remove(it)
-    self.update_track_numbers()
+    self.remove(it)
+    self.update_view()
 
 
   def cell_edited_cb(self, cell, path, new_text, column):
     self[path][column] = new_text
-    return
-
-  def get_length(self):
-    print self.total_length_seconds
-    return datetime.timedelta(seconds=self.total_length_seconds)
-
+    self.update_view()
+    
 
   def _DEBUG_add_fake_list(self):
+    print "FAKE DEBUG PLAYLIST GENERATION ENABLED"
+    print "COMMENT OUT FROM BEGINNING OF PLAYLIST.PY TO DISABLE"
     i = 1
     for file in os.listdir("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/"):
       self.add_track("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/" + file)

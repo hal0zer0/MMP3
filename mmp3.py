@@ -27,8 +27,13 @@ class MMP3(gtk.Window):
     sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
     self.table.attach(sw, 0,16,0,14)
 
+    summaryText = "Nothin yet"
+    summary = gtk.Label()
+    summary.set_text(summaryText)
+    self.table.attach(summary, 0, 8, 14, 15)
+
     #Insert custom Playlist class into treeview
-    self.playlist = playlist.Playlist()
+    self.playlist = playlist.Playlist(summary)
     self.treeView = gtk.TreeView(self.playlist)
     self.treeView.set_reorderable(True)
     self.treeView.connect("cursor-changed", self.select_cb, self.treeView.get_selection())
@@ -44,8 +49,6 @@ class MMP3(gtk.Window):
       i += 1
 
     sw.add(self.treeView)
-
-    self.show_summary()
 
     #Now create and add buttons
     self.add_buttons()
@@ -79,13 +82,6 @@ class MMP3(gtk.Window):
     self.table.attach(self.addFileButton, 14,16,15,16)
 
 
-  def show_summary(self):
-    print "should be showing summary"
-    summaryText = "Number of Tracks: %s    Total Length: %s" % (len(self.playlist), self.playlist.get_length())
-    playlistInfo = gtk.Label()
-    playlistInfo.set_text(summaryText)
-    self.table.attach(playlistInfo, 0, 8, 14, 15)
-
   # Callback functions
   def add_button_cb(self, widget):
     filenameToAdd = add_file_dialog.show()
@@ -103,18 +99,13 @@ class MMP3(gtk.Window):
 
 
   def drop_cb(self, widget, data):
-    self.playlist.update_track_numbers()
+    self.playlist.update_view()
     
 
   def key_press_cb(self, arg1, key_pressed):
     #check for delete key
     if key_pressed.keyval == 65535:
-      print self.it
       self.playlist.remove_item(self.model, self.it)
-
-
-  #def reorder_cb(self, arg1):
-  #  self.playlist.update_track_numbers()
 
     
 if __name__ == "__main__":
