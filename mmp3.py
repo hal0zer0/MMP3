@@ -15,7 +15,6 @@ class MMP3(gtk.Window):
 
     #Set initial window
     self.set_size_request(800, 600)
-    #self.set_position(gtk.WIN_POS_CENTER)
     self.connect("destroy", gtk.main_quit)
     self.set_title("MMP3")
 
@@ -28,13 +27,14 @@ class MMP3(gtk.Window):
     sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
     self.table.attach(sw, 0,16,0,14)
 
-    #Insert custom Playlist class into treeview, add to scrolling window
+    #Insert custom Playlist class into treeview
     self.playlist = playlist.Playlist()
     self.treeView = gtk.TreeView(self.playlist)
+    self.treeView.set_reorderable(True)
     self.treeView.connect("cursor-changed", self.select_cb, self.treeView.get_selection())
     self.treeView.connect("drag-end", self.drop_cb)
     self.treeView.connect("key-press-event", self.key_press_cb)
-    self.treeView.set_reorderable(True)
+    #self.treeView.connect("columns-changed", self.reorder_cb)
 
     #Create initial columns in treeview
     initial_columns = ("#", "Title", "Artist", "Length", "Path")
@@ -42,15 +42,17 @@ class MMP3(gtk.Window):
     for cname in initial_columns:
       self.playlist.add_column(cname, i, self.treeView)
       i += 1
+
     sw.add(self.treeView)
+
+    self.show_summary()
 
     #Now create and add buttons
     self.add_buttons()
     self.add(self.table)
     self.show_all()
 
-  
-    #iter += 1
+
   def add_buttons(self):
     self.addFileButton = gtk.Button("Add Item")
     self.addFileButton.connect("clicked", self.add_button_cb)
@@ -77,10 +79,17 @@ class MMP3(gtk.Window):
     self.table.attach(self.addFileButton, 14,16,15,16)
 
 
-  # Callback methods for buttons
+  def show_summary(self):
+    print "should be showing summary"
+    summaryText = "Number of Tracks: %s    Total Length: %s" % (len(self.playlist), self.playlist.get_length())
+    playlistInfo = gtk.Label()
+    playlistInfo.set_text(summaryText)
+    self.table.attach(playlistInfo, 0, 8, 14, 15)
+
+  # Callback functions
   def add_button_cb(self, widget):
     filenameToAdd = add_file_dialog.show()
-    self.playlist.add_track()
+    self.playlist.add_track(filenameToAdd)
 
 
   def del_button_cb(self, widget):
@@ -92,14 +101,22 @@ class MMP3(gtk.Window):
     if self.selection: #result could be None
       self.model, self.it = self.selection
 
+
   def drop_cb(self, widget, data):
     self.playlist.update_track_numbers()
     
-  def key_press_cb(self, arg1, arg2):
-    if arg2.keyval == 65535:
+
+  def key_press_cb(self, arg1, key_pressed):
+    #check for delete key
+    if key_pressed.keyval == 65535:
       print self.it
       self.playlist.remove_item(self.model, self.it)
-  
+
+
+  #def reorder_cb(self, arg1):
+  #  self.playlist.update_track_numbers()
+
+    
 if __name__ == "__main__":
   MMP3()
   gtk.main()

@@ -10,6 +10,7 @@ import os
 class Playlist(gtk.ListStore):
   def __init__(self):
     super(Playlist, self).__init__(str, str, str, str, str)
+    self.total_length_seconds = 0
     self._DEBUG_add_fake_list()
 
 
@@ -36,84 +37,45 @@ class Playlist(gtk.ListStore):
       ext = filenameToAdd.split(".").pop().lower()
       print "Extension is", ext
       #MP3 handler
-      if ext == "mp3":
-        trackInfo = self._get_mp3_trackInfo(filenameToAdd)
-        self.append(trackInfo)
-        self.update_track_numbers()
-        return True
-      #FLAC handler
-      elif ext == "flac":
-        trackInfo = self._get_flac_trackInfo(filenameToAdd)
-        self.append(trackInfo)
-        self.update_track_numbers()
-        return True
-      elif ext == "ogg":
-        trackInfo = self._get_ogg_trackInfo(filenameToAdd)
-        self.append(trackInfo)
-        self.update_track_numbers()
-        return True
+      trackInfo = self._get_trackInfo(filenameToAdd, ext)
+      self.append(trackInfo)
+      self.update_track_numbers()
 
-      else:
-        return False
-
-    
-
-
-  def _get_flac_trackInfo(self, filename):
-    try:
-      flacInfo = FLAC(filename)
-      print flacInfo
-      print flacInfo.info.length
-      artist = flacInfo["artist"][0].strip()
-      title = flacInfo["title"][0].strip()
-      length = str(datetime.timedelta(seconds=int(flacInfo.info.length)))
-    except Exception as err:
-      print err
-      artist = "Unknown"
-      title = "Unknown"
-      length = "0:00"
       
-    return [len(self) + 1, title, artist, length, filename]
+  
 
 
-  def _get_ogg_trackInfo(self, filename):
+  def _get_trackInfo(self, filename, ext):
+
     try:
-      oggInfo = OggVorbis(filename)
-      print oggInfo
-      print oggInfo.info.length
-      artist = oggInfo["artist"][0].strip()
-      title = oggInfo["title"][0].strip()
-      length = str(datetime.timedelta(seconds=int(oggInfo.info.length)))
+      if ext == "flac":
+        track = FLAC(filename)
+        length_seconds = track.info.length
+      elif ext == "mp3":
+        track = EasyID3(filename)
+        fileInfo = MP3(filename)
+        length_seconds = fileInfo.info.length
+
+      elif ext == "ogg":
+        track = OggVorbis(filename)
+        length_seconds = track.info.length
+      else:
+        raise NotImplementedError
+        return False
     except Exception as err:
       print err
-      artist = "Unknown"
-      title = "Unknown"
-      length = "0:00"
+      length_seconds = 0
+      return [len(self) + 1, "Unknown", "Unknown", "0:00", filename]
 
-    return [len(self) + 1, title, artist, length, filename]
+    print track
+    print length_seconds
+    artist = track["artist"][0].strip()
+    title = track["title"][0].strip()
+    #length_seconds = flacInfo.info.length
+    length_minutes = str(datetime.timedelta(seconds=int(length_seconds)))
+    self.total_length_seconds += length_seconds
 
-
-  def _get_mp3_trackInfo(self, filename):
-    #Get artist and title from ID3
-    try:
-      id3Info = EasyID3(filename)
-      artist = id3Info["artist"][0].strip()
-      title = id3Info["title"][0].strip()
-    except Exception as err:
-      print err
-      artist = "Unknown"
-      title = "Unknown"
-
-    #Get length info from MP3 file
-    try:
-      file_info = MP3(filename)
-      secondslong = int(file_info.info.length)
-      length = str(datetime.timedelta(seconds=secondslong))
-    except:
-      length = "0:00"
-
-    return [len(self) + 1, title, artist, length, filename]
-
+    return [len(self) + 1, title, artist, length_minutes, filename]
 
   def update_track_numbers(self):
     i = 1
@@ -130,6 +92,11 @@ class Playlist(gtk.ListStore):
   def cell_edited_cb(self, cell, path, new_text, column):
     self[path][column] = new_text
     return
+
+  def get_length(self):
+    print self.total_length_seconds
+    return datetime.timedelta(seconds=self.total_length_seconds)
+
 
   def _DEBUG_add_fake_list(self):
     i = 1
