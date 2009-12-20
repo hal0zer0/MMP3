@@ -1,20 +1,16 @@
 import gtk
-import add_file_dialog
 import datetime
-
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
-
-#from ogg import vorbis
 from mutagen.oggvorbis import OggVorbis
-
 from mutagen.flac import FLAC
-
-
+## DEBUG imports
+import os
 
 class Playlist(gtk.ListStore):
   def __init__(self):
     super(Playlist, self).__init__(str, str, str, str, str)
+    self._DEBUG_add_fake_list()
 
 
   def add_column(self, name, id, treeView):
@@ -31,9 +27,9 @@ class Playlist(gtk.ListStore):
     treeView.append_column(column)
 
 
-  def add_track(self):
+  def add_track(self, filenameToAdd):
     print "in playlist.add_track"
-    filenameToAdd = add_file_dialog.show()
+    
 
     #Verify file was selected, get extension and track info
     if filenameToAdd != None:
@@ -134,5 +130,10 @@ class Playlist(gtk.ListStore):
   def cell_edited_cb(self, cell, path, new_text, column):
     self[path][column] = new_text
     return
+
+  def _DEBUG_add_fake_list(self):
+    i = 1
+    for file in os.listdir("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/"):
+      self.add_track("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/" + file)
 
 author__= "Josh Price"

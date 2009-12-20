@@ -33,6 +33,7 @@ class MMP3(gtk.Window):
     self.treeView = gtk.TreeView(self.playlist)
     self.treeView.connect("cursor-changed", self.select_cb, self.treeView.get_selection())
     self.treeView.connect("drag-end", self.drop_cb)
+    self.treeView.connect("key-press-event", self.key_press_cb)
     self.treeView.set_reorderable(True)
 
     #Create initial columns in treeview
@@ -78,6 +79,7 @@ class MMP3(gtk.Window):
 
   # Callback methods for buttons
   def add_button_cb(self, widget):
+    filenameToAdd = add_file_dialog.show()
     self.playlist.add_track()
 
 
@@ -92,6 +94,11 @@ class MMP3(gtk.Window):
 
   def drop_cb(self, widget, data):
     self.playlist.update_track_numbers()
+    
+  def key_press_cb(self, arg1, arg2):
+    if arg2.keyval == 65535:
+      print self.it
+      self.playlist.remove_item(self.model, self.it)
   
 if __name__ == "__main__":
   MMP3()
