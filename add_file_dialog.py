@@ -3,7 +3,6 @@ import gtk
 
 def show():
   #Verify GTK version
-  print "in SHOW method"
   if gtk.pygtk_version < (2,3,90):
     main.mmp2log(__name__,"PyGtk 2.3.90 or later required")
     raise SystemExit

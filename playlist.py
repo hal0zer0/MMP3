@@ -11,7 +11,6 @@ import os
 class Playlist(gtk.ListStore):
   def __init__(self, summary):
     super(Playlist, self).__init__(str, str, str, str, str, float)
-    #self.total_length_seconds = 0
     self.summary = summary
     self._DEBUG_add_fake_list()
 
@@ -26,7 +25,6 @@ class Playlist(gtk.ListStore):
     column.set_resizable(True)
     column.set_reorderable(True)
     column.set_sort_column_id(id)
-
     treeView.append_column(column)
 
 
@@ -53,7 +51,7 @@ class Playlist(gtk.ListStore):
         track = OggVorbis(filename)
         length_seconds = track.info.length
       else:
-        raise NotImplementedError
+        #raise NotImplementedError
         return False
     except Exception as err:
       print err
@@ -103,6 +101,7 @@ class Playlist(gtk.ListStore):
   def _DEBUG_add_fake_list(self):
     print "FAKE DEBUG PLAYLIST GENERATION ENABLED"
     print "COMMENT OUT FROM BEGINNING OF PLAYLIST.PY TO DISABLE"
+    print "THIS SHOULD NOT BE IN THE RELEASE FILE"
     i = 1
     for file in os.listdir("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/"):
       self.add_track("/mnt/media/Music/Tom Waits/Orphans (2006)/Bastards/" + file)

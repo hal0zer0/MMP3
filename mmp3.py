@@ -1,6 +1,7 @@
 import add_file_dialog
 import gtk
 import playlist
+import publisher
 
 __author__="Josh Price"
 
@@ -78,7 +79,7 @@ class MMP3(gtk.Window):
 
     #Publish List button
     self.addFileButton = gtk.Button("PUBLISH")
-    self.addFileButton.connect("clicked", self.add_button_cb, "PUB")
+    self.addFileButton.connect("clicked", self.pub_button_cb)
     self.table.attach(self.addFileButton, 14,16,15,16)
 
 
@@ -107,6 +108,9 @@ class MMP3(gtk.Window):
     if key_pressed.keyval == 65535:
       self.playlist.remove_item(self.model, self.it)
 
+  def pub_button_cb(self, widget):
+    pw = publisher.PublishWindow(self.playlist)
+    
     
 if __name__ == "__main__":
   MMP3()
